@@ -1,0 +1,13 @@
+{
+  "name": "chartroom-client",
+  "version": "8.4.7",
+  "description": "Client-side files for the chartroom application",
+  "scripts": {
+    "deploy:middleware": "serverless deploy",
+    "deploy:assets": "serverless deploy-assets",
+    "deploy:assets-to-public": "serverless deploy-assets-to-public"
+  },
+  "devDependencies": {
+    "serverless": "^1.69.0"
+  }
+}

@@ -22,7 +22,7 @@ custom:
     commands:
       deploy-assets: aws s3 sync www/ s3://${{self:custom.s3Bucket}}/deploys/$(git rev-parse --short HEAD) --delete --cache-control max-age=${TTL:-0} --acl 'public-read'
       deploy-to-public: aws s3 sync s3://${{self:custom.s3Bucket}}/deploys/${DEPLOY_SHA:-$(git rev-parse --short HEAD)}/ s3://${{self:custom.s3Bucket}}/public/ --delete --acl 'public-read'
-      invalidate-cache: aws cloudfront create-invalidation --distribution-id ${{cf:helloworld-staging.CloudfrontDistributionId}} --paths "/*"
+      # invalidate-cache: aws cloudfront create-invalidation --distribution-id ${{cf:helloworld-staging.CloudfrontDistributionId}} --paths "/*"
 provider:
   name: aws
   runtime: nodejs10.x # Because this runs on CloudFront (lambda@edge) it must be 6.10
@@ -170,12 +170,13 @@ resources:
             Quantity: 1
             Items:
               - Id: "${{self:custom.s3Bucket}}"
-                OriginGroupFailoverCriteria:
+                FailoverCriteria:
                   StatusCodes:
                     Items:
                       - 404
                     Quantity: 1
-                Members: 
+                Members:
+                  Quantity: 2
                   Items:
                     - OriginId: "${{self:custom.s3Bucket}}/public"
                     - OriginId: "${{self:custom.s3Bucket}}/deploys"

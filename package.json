@@ -8,6 +8,7 @@
     "deploy:assets-to-public": "serverless deploy-assets-to-public"
   },
   "devDependencies": {
-    "serverless": "^1.69.0"
+    "serverless": "^1.69.0",
+    "serverless-plugin-scripts": "^1.0.2"
   }
 }

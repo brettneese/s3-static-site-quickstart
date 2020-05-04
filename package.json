@@ -5,7 +5,7 @@
   "scripts": {
     "deploy:infra": "serverless deploy",
     "deploy:assets": "serverless deploy-assets",
-    "deploy:assets-to-public": "serverless deploy-assets-to-public"
+    "deploy:assets-to-public": "serverless deploy-to-public"
   },
   "devDependencies": {
     "serverless": "^1.69.0",

@@ -14,16 +14,33 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: "10.x"
-      - run: npm install
-      - run: npm run build --if-present
-      - run: npm test --if-present
+      - name: Cache node modules
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-build-${{ env.cache-name }}-
+            ${{ runner.OS }}-build-
+            ${{ runner.OS }}-
+      - name: Install and build
+        run: npm install; npm run build --if-present 
+      - name: Test
+        run: npm test --if-present
         env:
           CI: true
-      - run: npm run deploy:assets --if-present # deploy just this branch
+      - name: Deploy to SHA
+        run: npm run deploy:assets --if-present
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
+      - name: 'Deploy to public/root'
+        if: (success() && startsWith(github.event.deployment.environment, 'staging')) || (success() && startsWith(github.event.deployment.environment, 'production'))
+        run: npm run deploy:assets-to-public
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          
       # Failure output
       - name: 'Deployment failure'
         if: failure()

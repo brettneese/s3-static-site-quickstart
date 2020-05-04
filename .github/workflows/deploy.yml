@@ -6,8 +6,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: benjlevesque/short-sha@master
-        id: short-sha
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
@@ -37,7 +35,7 @@ jobs:
         with:
           state: 'success'
           token: '${{ github.token }}'
-          environment-url: https://helloworld.staging.hbkapps.com/${{ steps.short-sha.outputs.sha }}/index.html
+          environment-url: https://helloworld.staging.hbkapps.com/deploys/${{ github.sha }}/index.html
 
       - name: 'Deployment failure'
         if: failure()

@@ -6,6 +6,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: 'Deploy ${{ github.event.deployment.environment }}'
+        run: |
+          echo "task - ${{ github.event.deployment.production_environment }}"
+          echo "environment - ${{ github.event.deployment.task }}"
+          echo "payload - ${{ github.event.deployment.payload }}"
+
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
@@ -23,11 +29,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: 'Deploy ${{ github.event.deployment.environment }}'
-        run: |
-          echo "task - ${{ github.event.deployment.environment }}"
-          echo "environment - ${{ github.event.deployment.task }}"
-          echo "payload - ${{ github.event.deployment.payload }}"
 
       - name: 'Deployment success'
         if: success()

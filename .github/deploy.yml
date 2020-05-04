@@ -1,6 +1,7 @@
 production:
   environment: production
   production_environment: true
+  required_contexts: ["ci", "deliverybot/promotion"]
 
 staging:
   auto_deploy_on: refs/heads/master

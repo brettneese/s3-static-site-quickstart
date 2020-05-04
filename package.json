@@ -3,7 +3,7 @@
   "version": "8.4.7",
   "description": "Client-side files for the chartroom application",
   "scripts": {
-    "deploy:middleware": "serverless deploy",
+    "deploy:infra": "serverless deploy",
     "deploy:assets": "serverless deploy-assets",
     "deploy:assets-to-public": "serverless deploy-assets-to-public"
   },

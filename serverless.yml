@@ -20,9 +20,9 @@ custom:
   # deployment scripts
   scripts:
     commands:
-      deploy-assets: aws s3 sync www/ s3://${{self:custom.s3Bucket}}/deploys/$(git rev-parse --short HEAD) --delete --cache-control max-age=${TTL:-0} --acl 'public-read'
-      deploy-to-public: aws s3 sync s3://${{self:custom.s3Bucket}}/deploys/${DEPLOY_SHA:-$(git rev-parse --short HEAD)}/ s3://${{self:custom.s3Bucket}}/public/ --delete --acl 'public-read'
-      # invalidate-cache: aws cloudfront create-invalidation --distribution-id ${{cf:helloworld-staging.CloudfrontDistributionId}} --paths "/*"
+      deploy-assets: aws s3 sync www/ s3://${{self:custom.s3Bucket}}/deploys/$(git rev-parse HEAD) --delete --cache-control max-age=${TTL:-0} --acl 'public-read'
+      deploy-to-public: aws s3 sync s3://${{self:custom.s3Bucket}}/deploys/${DEPLOY_SHA:-$(git rev-parse HEAD)}/ s3://${{self:custom.s3Bucket}}/public/ --delete --acl 'public-read'
+      invalidate-cache: aws cloudfront create-invalidation --distribution-id ${{cf:helloworld-staging.CloudfrontDistributionId}} --paths "/*"
 provider:
   name: aws
   runtime: nodejs10.x # Because this runs on CloudFront (lambda@edge) it must be 6.10
@@ -86,7 +86,12 @@ resources:
         Bucket: !Ref WebsiteBucket
         PolicyDocument:
           Statement:
-            - Action: "s3:GetObject"
+            - Action: "s3:ListBucket" # CF needs ListBucket permissions to return 404 instead of 403 from S3
+              Effect: Allow
+              Resource: !Sub "arn:aws:s3:::${WebsiteBucket}"
+              Principal:
+                CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
+            - Action: "s3:GetObject" # 
               Effect: Allow
               Resource: !Sub "arn:aws:s3:::${WebsiteBucket}/*"
               Principal:
@@ -161,8 +166,7 @@ resources:
               DomainName: { "Fn::GetAtt": ["WebsiteBucket", "DomainName"] }
               S3OriginConfig:
                 OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"
-            - Id: "${{self:custom.s3Bucket}}/deploys"
-              OriginPath: "/deploys"
+            - Id: "${{self:custom.s3Bucket}}/"
               DomainName: { "Fn::GetAtt": ["WebsiteBucket", "DomainName"] }
               S3OriginConfig:
                 OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"
@@ -179,7 +183,7 @@ resources:
                   Quantity: 2
                   Items:
                     - OriginId: "${{self:custom.s3Bucket}}/public"
-                    - OriginId: "${{self:custom.s3Bucket}}/deploys"
+                    - OriginId: "${{self:custom.s3Bucket}}/"
 
   Outputs:
     CloudfrontDistributionId:

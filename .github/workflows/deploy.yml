@@ -23,13 +23,8 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      - name: 'Deployment success'
-        if: success()
-        uses: 'deliverybot/deployment-status@master'
-        with:
-          state: 'success'
-          token: '${{ github.token }}'
-          environment-url: https://helloworld.staging.hbkapps.com/deploys/${{ github.sha }}/index.html
+
+      # Failure output
       - name: 'Deployment failure'
         if: failure()
         uses: 'deliverybot/deployment-status@master'
@@ -37,4 +32,26 @@ jobs:
           state: 'failure'
           token: '${{ github.token }}'
 
+      # Success outputs
+      - name: 'Deployment success review'
+        if: success() && startsWith(github.event.deployment.environment, 'pr')
+        uses: 'deliverybot/deployment-status@master'
+        with:
+          state: 'success'
+          token: '${{ github.token }}'
+          environment-url: https://helloworld.staging.hbkapps.com/deploys/${{ github.sha }}/index.html
+      - name: 'Deployment success staging'
+        if: success() && startsWith(github.event.deployment.environment, 'staging')
+        uses: 'deliverybot/deployment-status@master'
+        with:
+          state: 'success'
+          token: '${{ github.token }}'
+          environment-url: https://helloworld.staging.hbkapps.com/index.html
+      - name: 'Deployment success production'
+        if: success() && startsWith(github.event.deployment.environment, 'production')
+        uses: 'deliverybot/deployment-status@master'
+        with:
+          state: 'success'
+          token: '${{ github.token }}'
+          environment-url: https://helloworld.production.hbkapps.com/
         

@@ -86,7 +86,12 @@ resources:
         Bucket: !Ref WebsiteBucket
         PolicyDocument:
           Statement:
-            - Action: "s3:GetObject"
+            - Action: "s3:ListBucket" # CF needs ListBucket permissions to return 404 instead of 403 from S3
+              Effect: Allow
+              Resource: !Sub "arn:aws:s3:::${WebsiteBucket}"
+              Principal:
+                CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
+            - Action: "s3:GetObject" # 
               Effect: Allow
               Resource: !Sub "arn:aws:s3:::${WebsiteBucket}/*"
               Principal:
@@ -162,7 +167,6 @@ resources:
               S3OriginConfig:
                 OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"
             - Id: "${{self:custom.s3Bucket}}/"
-              OriginPath: "/"
               DomainName: { "Fn::GetAtt": ["WebsiteBucket", "DomainName"] }
               S3OriginConfig:
                 OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}"

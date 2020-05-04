@@ -10,28 +10,19 @@ jobs:
         if: startsWith(github.event.deployment.environment, 'production')
         run: |
           echo "::set-env name=STAGE::production"
-
-      - name: 'Deploy ${{ github.event.deployment.environment }}'
-        run: |
-          echo "task - ${{ github.event.deployment.production_environment }}"
-          echo "environment - ${{ github.event.deployment.task }}"
-          echo "payload - ${{ github.event.deployment.payload }}"
-
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
           node-version: "10.x"
       - run: npm install
       - run: npm run build --if-present
-      # - run: npm test --if-present
-      #   env:
-      #     CI: true
+      - run: npm test --if-present
+        env:
+          CI: true
       - run: npm run deploy:assets --if-present # deploy just this branch
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-
       - name: 'Deployment success'
         if: success()
         uses: 'deliverybot/deployment-status@master'
@@ -39,7 +30,6 @@ jobs:
           state: 'success'
           token: '${{ github.token }}'
           environment-url: https://helloworld.staging.hbkapps.com/deploys/${{ github.sha }}/index.html
-
       - name: 'Deployment failure'
         if: failure()
         uses: 'deliverybot/deployment-status@master'
